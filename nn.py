@@ -12,6 +12,7 @@ def tanh(Z):
     return np.tanh(Z)
 
 
+# forward propagation
 def initialiseParameters(layer_dims):
     L = len(layer_dims)
     parameters = {}
@@ -62,12 +63,13 @@ def compute_cost(A, Y_train):
     return cost
 
 
-def calculateDerivatives(A, Y_train, caches, parameters):
+# backward propagation
+def calculateDerivatives(A, Y_train, caches):
     grads = {}
     L = len(caches)
     m = Y_train.shape[1]
 
-    linear_cache, activation_cache = caches[L]
+    linear_cache, activation_cache = caches[L - 1]
     A_prev, W, b = linear_cache
     Z = activation_cache
 
@@ -95,22 +97,63 @@ def calculateDerivatives(A, Y_train, caches, parameters):
     return grads
 
 
-def updateParameters(parameters, grads, learning_rate=0.01):
+def updateParameters(parameters, grads, learning_rate=0.1):
     L = len(parameters) // 2
 
-    for l in range(1, L):
+    for l in range(1, L + 1):
         parameters["W" + str(l)] -= learning_rate * grads["dW" + str(l)]
         parameters["b" + str(l)] -= learning_rate * grads["db" + str(l)]
 
     return parameters
 
 
-def train(layer_dims, numberOfGenerations=10):
-    parameters = initialiseParameters()
+def train(A0, Y_train, layer_dims, numberOfGenerations, ifPrint):
+    parameters = initialiseParameters(layer_dims)
 
-    for i in range(1, numberOfGenerations):
+    for i in range(numberOfGenerations):
         A, caches = linearForward(parameters, A0)
-        grads = calculateDerivatives(A, Y_train, caches, parameters)
-        parameters = updateParameters(parameters, grads, learning_rate=0.01)
+        grads = calculateDerivatives(A, Y_train, caches)
+        parameters = updateParameters(parameters, grads, learning_rate=2)
 
-    return XXX
+        if ifPrint and i % 10 == 0:
+            print("Training cost: " + str(compute_cost(A, Y_train)))
+
+    return parameters
+
+
+def predict(ifPrint=True):
+    # loading the dataset
+    train_dataset = h5py.File("cats_vs_dogs_64.h5", "r")
+    X_train = np.array(train_dataset["X_train"][:])
+    Y_train = np.array(train_dataset["Y_train"][:])
+    X_test = np.array(train_dataset["X_test"][:])
+    Y_test = np.array(train_dataset["Y_test"][:])
+
+    # reshaping the matrices
+    Y_train = Y_train.reshape(1, -1)
+    Y_test = Y_test.reshape(1, -1)
+    X_train = X_train.reshape(X_train.shape[0], -1).T
+    X_test = X_test.reshape(X_test.shape[0], -1).T
+    m = X_train.shape[1]
+
+    # checking the dimensions
+    print("X_train shape:", X_train.shape)
+    print("Y_train shape:", Y_train.shape)
+    print("X_test shape:", X_test.shape)
+    print("Y_test shape:", Y_test.shape)
+
+    n_x = X_train.shape[0]
+    layer_dims = [n_x, 10, 3, 1]
+
+    finalParameters = train(
+        X_train, Y_train, layer_dims, numberOfGenerations=500, ifPrint=True
+    )
+
+    final_values, _ = linearForward(finalParameters, X_test)
+    predictions = (final_values > 0.5).astype(int)
+    test_accuracy = np.mean(predictions == Y_test)
+    print("Test cost: " + str(compute_cost(final_values, Y_test)))
+    print(f"Test accuracy: {test_accuracy * 100:.2f}%")
+
+
+predict()
