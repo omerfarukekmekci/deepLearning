@@ -16,16 +16,16 @@ def tanh(Z):
 train_dataset = h5py.File("cats_vs_dogs_96.h5", "r")
 X_train = np.array(train_dataset["X_train"][:])
 Y_train = np.array(train_dataset["Y_train"][:])
-
 X_test = np.array(train_dataset["X_test"][:])
 Y_test = np.array(train_dataset["Y_test"][:])
 
-X_train = X_train.reshape(X_train.shape[0], -1).T
-X_test = X_test.reshape(X_test.shape[0], -1).T
-m = X_train.shape[0]
 
+# reshaping the matrices
 Y_train = Y_train.reshape(1, -1)
 Y_test = Y_test.reshape(1, -1)
+X_train = X_train.reshape(X_train.shape[0], -1).T
+X_test = X_test.reshape(X_test.shape[0], -1).T
+m = X_train.shape[1]
 
 
 # checking the dimensions
@@ -69,8 +69,8 @@ caches.append(cache_3)
 
 
 # calculate the cost
-cost = -np.sum(Y_train * np.log(A3) + (1 - Y_train) * np.log(1 - A3)) / X_train.shape[1]
-cost = np.squeeze(cost)  # this makes the value a scalar instead of a 1*1 array
+cost = -np.sum(Y_train * np.log(A3) + (1 - Y_train) * np.log(1 - A3)) / m
+cost = np.squeeze(cost)  # this makes the value a scalar instead of a 1*1 matrix
 
 
 # calculate the derivatives for the backwards propagation
@@ -87,3 +87,15 @@ dA1 = np.dot(W2.T, dZ2)
 dZ1 = dA1 * (1 - A1**2)
 dW1 = np.dot(dZ1, A0.T) / m
 db1 = np.sum(dZ1, axis=1, keepdims=True) / m
+
+
+# update parameters
+learning_rate = 0.01
+
+for i in range(0, 100):
+    W1 -= learning_rate * dW1
+    b1 -= learning_rate * db1
+    W2 -= learning_rate * dW2
+    b2 -= learning_rate * db2
+    W3 -= learning_rate * dW3
+    b3 -= learning_rate * db3
