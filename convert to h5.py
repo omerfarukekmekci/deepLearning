@@ -13,7 +13,7 @@ dataset_path = (
 categories = ["Cat", "Dog"]  # Folder names inside dataset_path
 image_size = (64, 64)  # Resize images to 64*64
 test_size = 0.2  # 20% of data will be test set
-output_h5_file = "cats_vs_dogs_64.h5"
+output_h5_file = "large_set_64.h5"
 
 # ---------------------------
 # Load and preprocess images

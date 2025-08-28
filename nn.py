@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 
 # helper functions
 def sigmoid(Z):
-    return 1 / (1 + np.exp(-Z))
+    return np.where(Z >= 0, 1 / (1 + np.exp(-Z)), np.exp(Z) / (1 + np.exp(Z)))
 
 
-def tanh(Z):
-    return np.tanh(Z)
+def ReLU(Z):
+    return np.maximum(0, Z)
 
 
 # forward propagation
@@ -18,9 +18,10 @@ def initialiseParameters(layer_dims):
     parameters = {}
 
     for l in range(1, L):
-        parameters["W" + str(l)] = (
-            np.random.randn(layer_dims[l], layer_dims[l - 1]) * 0.01
-        )
+        # He initialization for ReLU
+        parameters["W" + str(l)] = np.random.randn(
+            layer_dims[l], layer_dims[l - 1]
+        ) * np.sqrt(2.0 / layer_dims[l - 1])
         parameters["b" + str(l)] = np.zeros((layer_dims[l], 1))
 
     return parameters
@@ -36,7 +37,7 @@ def linearForward(parameters, A0):
         Z = np.dot(parameters["W" + str(l)], A_prev) + parameters["b" + str(l)]
         linear_cache = (A_prev, parameters["W" + str(l)], parameters["b" + str(l)])
 
-        A = tanh(Z)
+        A = ReLU(Z)
         activation_cache = Z
 
         cache = (linear_cache, activation_cache)
@@ -86,7 +87,7 @@ def calculateDerivatives(A, Y_train, caches):
         A_prev, W, b = linear_cache
         Z = activation_cache
 
-        dZ = dA_prev * (1 - np.tanh(Z) ** 2)
+        dZ = dA_prev * (Z > 0).astype(float)
         dW = np.dot(dZ, A_prev.T) / m
         db = np.sum(dZ, axis=1, keepdims=True) / m
         dA_prev = np.dot(W.T, dZ)
@@ -113,17 +114,17 @@ def train(A0, Y_train, layer_dims, numberOfGenerations, ifPrint):
     for i in range(numberOfGenerations):
         A, caches = linearForward(parameters, A0)
         grads = calculateDerivatives(A, Y_train, caches)
-        parameters = updateParameters(parameters, grads, learning_rate=2)
+        parameters = updateParameters(parameters, grads, learning_rate=0.02)
 
-        if ifPrint and i % 10 == 0:
-            print("Training cost: " + str(compute_cost(A, Y_train)))
+        if ifPrint and i % 50 == 0:
+            print(f"Generation: {i},    Training cost: {compute_cost(A, Y_train):.6f}")
 
     return parameters
 
 
 def predict(ifPrint=True):
     # loading the dataset
-    train_dataset = h5py.File("cats_vs_dogs_64.h5", "r")
+    train_dataset = h5py.File("medium_set_64.h5", "r")
     X_train = np.array(train_dataset["X_train"][:])
     Y_train = np.array(train_dataset["Y_train"][:])
     X_test = np.array(train_dataset["X_test"][:])
@@ -143,10 +144,10 @@ def predict(ifPrint=True):
     print("Y_test shape:", Y_test.shape)
 
     n_x = X_train.shape[0]
-    layer_dims = [n_x, 10, 3, 1]
+    layer_dims = [n_x, 64, 16, 4, 1]
 
     finalParameters = train(
-        X_train, Y_train, layer_dims, numberOfGenerations=500, ifPrint=True
+        X_train, Y_train, layer_dims, numberOfGenerations=2001, ifPrint=True
     )
 
     final_values, _ = linearForward(finalParameters, X_test)
