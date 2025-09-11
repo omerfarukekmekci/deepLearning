@@ -1,0 +1,94 @@
+
+========================================
+MODEL TRAINING PARAMETERS
+========================================
+Image Size        : (300, 300)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 10
+Number of Layers  : 2
+Number of Convos  : 3
+Use Augmentation  : False
+Use Regularization: True
+
+LAST EPOCH PERFORMANCE
+----------------------------------------
+Training Loss     : 0.0347
+Training Accuracy : 0.9901
+Validation Loss   : 0.6627
+Validation Accuracy: 0.7852
+========================================
+
+
+
+
+========================================
+MODEL TRAINING PARAMETERS
+========================================
+Image Size        : (300, 300)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 10
+Number of Layers  : 2
+Number of Convos  : 3
+Use Augmentation  : True
+Use Regularization: True
+
+LAST EPOCH PERFORMANCE
+----------------------------------------
+Training Loss     : 0.5206
+Training Accuracy : 0.7381
+Validation Loss   : 0.4975
+Validation Accuracy: 0.7620
+========================================
+
+
+
+
+========================================
+MODEL TRAINING PARAMETERS
+========================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 15
+Number of Layers  : 2
+Number of Convos  : 3
+Use Augmentation  : False
+Use Regularization: False
+
+LAST EPOCH PERFORMANCE
+----------------------------------------
+Training Loss     : 0.0196
+Training Accuracy : 0.9941
+Validation Loss   : 0.8094
+Validation Accuracy: 0.7854
+========================================
+
+
+
+Elapsed Time      : 130m 58s
+
+========================================
+MODEL TRAINING PARAMETERS
+========================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 15
+Number of Layers  : 2
+Number of Convos  : 3
+Use Augmentation  : True
+Use Regularization: False
+
+LAST EPOCH PERFORMANCE
+----------------------------------------
+Training Loss     : 0.4885
+Training Accuracy : 0.7637
+Validation Loss   : 0.6763
+Validation Accuracy: 0.6976
+========================================
+
+
+
+Elapsed Time      : 141m 30s

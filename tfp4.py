@@ -4,19 +4,15 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # to hide tensorflow startup info
 
 import tensorflow as tf
 
-print("Num GPUs Available: ", len(tf.config.list_physical_devices("GPU")))
-
 # Variables to test for best accuracy:
-IMAGE_SIZE = (300, 300)
-BATCH_SIZE = 32
-LR = 1e-4
-EPOCHS = 10
-NUM_LAYERS = 2
-NUM_CONVOS = 3
-USE_AUG = 0
-USE_REG = 0
-USE_NORM = 0
-USE_CALLB = 0
+IMAGE_SIZE = (250, 250)  # unoptimized
+BATCH_SIZE = 32  # unoptimized
+LR = 1e-4  # unoptimized
+EPOCHS = 20  # unoptimized
+NUM_LAYERS = 2  # unoptimized
+NUM_CONVOS = 4  # unoptimized
+USE_AUG = 1
+USE_DRPT = 0  # unoptimized
 
 
 def print_parameters(
@@ -27,39 +23,83 @@ def print_parameters(
     NUM_LAYERS,
     NUM_CONVOS,
     USE_AUG,
-    USE_REG,
-    USE_NORM,
-    USE_CALLB,
+    USE_DRPT,
+    history=None,
+    log_file="CNN_results.txt",
 ):
-    print("")
+    with open(log_file, "a") as f:
+        f.write("\n" + "=" * 40 + "\n")
+        f.write("MODEL TRAINING PARAMETERS\n")
+        f.write("=" * 40 + "\n")
+
+        f.write(f"Image Size        : {IMAGE_SIZE}\n")
+        f.write(f"Batch Size        : {BATCH_SIZE}\n")
+        f.write(f"Learning Rate     : {LR}\n")
+        f.write(f"Epochs            : {EPOCHS}\n")
+        f.write(f"Number of Layers  : {NUM_LAYERS}\n")
+        f.write(f"Number of Convos  : {NUM_CONVOS}\n")
+        f.write(f"Use Augmentation  : {bool(USE_AUG)}\n")
+        f.write(f"Use Regularization: {bool(USE_DRPT)}\n")
+
+        if history is not None:
+            last_epoch = -1  # last epoch index
+            train_loss = history.history["loss"][last_epoch]
+            train_acc = history.history["accuracy"][last_epoch]
+            val_loss = history.history["val_loss"][last_epoch]
+            val_acc = history.history["val_accuracy"][last_epoch]
+
+            f.write("\nLAST EPOCH PERFORMANCE\n")
+            f.write("-" * 40 + "\n")
+            f.write(f"Training Loss     : {train_loss:.4f}\n")
+            f.write(f"Training Accuracy : {train_acc:.4f}\n")
+            f.write(f"Validation Loss   : {val_loss:.4f}\n")
+            f.write(f"Validation Accuracy: {val_acc:.4f}\n")
+        f.write("=" * 40 + "\n\n\n\n")
 
 
 TRAIN_DIR = "PetImages\\train"
 VAL_DIR = "PetImages\\validation"
+SHUFFLE_BUFFER_SIZE = 1000
+PREFETCH_BUFFER_SIZE = tf.data.AUTOTUNE
 
-import os
-from PIL import Image
 
+def create_no_aug_model(USE_DRPT, NUM_CONVOS, NUM_LAYERS):
+    model = tf.keras.Sequential()
 
-def create_no_aug_model():
-    model = tf.keras.models.Sequential(
-        [
-            tf.keras.Input(shape=(*IMAGE_SIZE, 3)),
-            tf.keras.layers.Rescaling(1.0 / 255),
-            tf.keras.layers.Conv2D(16, (3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Conv2D(32, (3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Conv2D(64, (3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(2, 2),
-            # tf.keras.layers.Conv2D(64, (3, 3), activation="relu"),
-            # tf.keras.layers.MaxPooling2D(2, 2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(512, activation="relu"),
-            # tf.keras.layers.Dense(256, activation="relu"),
-            tf.keras.layers.Dense(1, activation="sigmoid"),
-        ]
-    )
+    # Input + rescaling
+    model.add(tf.keras.Input(shape=(*IMAGE_SIZE, 3)))
+    model.add(tf.keras.layers.Rescaling(1.0 / 255))
+
+    # Conv block helper function
+    def conv_block(filters):
+        model.add(tf.keras.layers.Conv2D(filters, (3, 3), activation="relu"))
+        model.add(tf.keras.layers.BatchNormalization())
+        model.add(tf.keras.layers.MaxPooling2D(2, 2))
+        if USE_DRPT:
+            model.add(tf.keras.layers.Dropout(0.2))
+
+    # First 3 conv blocks
+    for f in [16, 32, 64]:
+        conv_block(f)
+
+    # Optional 4th conv block
+    if NUM_CONVOS == 4:
+        conv_block(64)
+
+    # Flatten + dense
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(512, activation="relu"))
+    model.add(tf.keras.layers.BatchNormalization())
+    if USE_DRPT:
+        model.add(tf.keras.layers.Dropout(0.3))
+
+    if NUM_LAYERS == 3:
+        model.add(tf.keras.layers.Dense(256, activation="relu"))
+        model.add(tf.keras.layers.BatchNormalization())
+        if USE_DRPT:
+            model.add(tf.keras.layers.Dropout(0.3))
+
+    model.add(tf.keras.layers.Dense(1, activation="sigmoid"))
 
     return model
 
@@ -78,10 +118,20 @@ def create_augmentation():
     return model
 
 
-no_aug_model, augmentation = create_no_aug_model(), create_augmentation()
+no_aug_model, augmentation = (
+    create_no_aug_model(USE_DRPT, NUM_CONVOS, NUM_LAYERS),
+    create_augmentation(),
+)
 
-model = tf.keras.models.Sequential([no_aug_model])
+tf.keras.layers.Dropout(0.2) if USE_DRPT else None,
+
+# model = tf.keras.models.Sequential([no_aug_model])
 # model = tf.keras.models.Sequential([augmentation, no_aug_model])
+
+if USE_AUG:
+    model = tf.keras.models.Sequential([augmentation, no_aug_model])
+else:
+    model = tf.keras.models.Sequential([no_aug_model])
 
 
 train_dataset = tf.keras.utils.image_dataset_from_directory(
@@ -100,18 +150,44 @@ validation_dataset = tf.keras.utils.image_dataset_from_directory(
     color_mode="rgb",
 )
 
+train_dataset_final = (
+    train_dataset.cache().shuffle(SHUFFLE_BUFFER_SIZE).prefetch(PREFETCH_BUFFER_SIZE)
+)
+
+validation_dataset_final = validation_dataset.cache().prefetch(PREFETCH_BUFFER_SIZE)
+
 model.compile(
     loss="binary_crossentropy",
     optimizer=tf.keras.optimizers.Adam(LR),
     metrics=["accuracy"],
 )
 
+
+class EarlyStoppingCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        if logs.get("accuracy") >= 0.999 and logs.get("val_accuracy") >= 0.999:
+            self.model.stop_training = True
+            print(
+                "\nReached 99.9% train accuracy and 99.9% validation accuracy, so cancelling training!"
+            )
+
+
 history = model.fit(
     train_dataset,
     epochs=EPOCHS,
     verbose=1,
     validation_data=validation_dataset,
-    # callbacks=[EarlyStoppingCallback()],
+    callbacks=[EarlyStoppingCallback()],
 )
 
-print_parameters()
+print_parameters(
+    IMAGE_SIZE=IMAGE_SIZE,
+    BATCH_SIZE=BATCH_SIZE,
+    LR=LR,
+    EPOCHS=EPOCHS,
+    NUM_LAYERS=NUM_LAYERS,
+    NUM_CONVOS=NUM_CONVOS,
+    USE_AUG=USE_AUG,
+    USE_DRPT=USE_DRPT,
+    history=history,
+)
