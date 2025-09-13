@@ -1,94 +1,308 @@
-
-========================================
+=============================================
 MODEL TRAINING PARAMETERS
-========================================
+=============================================
 Image Size        : (300, 300)
 Batch Size        : 32
 Learning Rate     : 0.0001
 Epochs            : 10
 Number of Layers  : 2
-Number of Convos  : 3
+Number of Convos  : 3 [16, 32, 64]
 Use Augmentation  : False
-Use Regularization: True
+Use Dropout       : True
 
 LAST EPOCH PERFORMANCE
-----------------------------------------
+---------------------------------------------
 Training Loss     : 0.0347
 Training Accuracy : 0.9901
 Validation Loss   : 0.6627
 Validation Accuracy: 0.7852
-========================================
+=============================================
 
 
 
-
-========================================
+=============================================
 MODEL TRAINING PARAMETERS
-========================================
+=============================================
 Image Size        : (300, 300)
 Batch Size        : 32
 Learning Rate     : 0.0001
 Epochs            : 10
 Number of Layers  : 2
-Number of Convos  : 3
+Number of Convos  : 3 [16, 32, 64]
 Use Augmentation  : True
-Use Regularization: True
+Use Dropout       : True
 
 LAST EPOCH PERFORMANCE
-----------------------------------------
+---------------------------------------------
 Training Loss     : 0.5206
 Training Accuracy : 0.7381
 Validation Loss   : 0.4975
 Validation Accuracy: 0.7620
-========================================
+=============================================
 
 
 
-
-========================================
+=============================================
 MODEL TRAINING PARAMETERS
-========================================
+=============================================
 Image Size        : (250, 250)
 Batch Size        : 32
 Learning Rate     : 0.0001
 Epochs            : 15
 Number of Layers  : 2
-Number of Convos  : 3
+Number of Convos  : 3 [16, 32, 64]
 Use Augmentation  : False
-Use Regularization: False
+Use Dropout       : False
 
 LAST EPOCH PERFORMANCE
-----------------------------------------
+---------------------------------------------
 Training Loss     : 0.0196
 Training Accuracy : 0.9941
 Validation Loss   : 0.8094
 Validation Accuracy: 0.7854
-========================================
+=============================================
 
 
 
-Elapsed Time      : 130m 58s
-
-========================================
+=============================================
 MODEL TRAINING PARAMETERS
-========================================
+=============================================
 Image Size        : (250, 250)
 Batch Size        : 32
 Learning Rate     : 0.0001
-Epochs            : 15
+Epochs            : 20
 Number of Layers  : 2
-Number of Convos  : 3
+Number of Convos  : 3 [16, 32, 64]
 Use Augmentation  : True
-Use Regularization: False
+Use Dropout       : False
 
 LAST EPOCH PERFORMANCE
-----------------------------------------
-Training Loss     : 0.4885
-Training Accuracy : 0.7637
-Validation Loss   : 0.6763
-Validation Accuracy: 0.6976
-========================================
+---------------------------------------------
+Training Loss     : 0.4523
+Training Accuracy : 0.7867
+Validation Loss   : 0.5650
+Validation Accuracy: 0.7802
+=============================================
 
 
 
-Elapsed Time      : 141m 30s
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 20
+Number of Layers  : 2
+Number of Convos  : 4 [16, 32, 64, 64]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3753
+Training Accuracy : 0.8318
+Validation Loss   : 0.3516
+Validation Accuracy: 0.8481
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 20
+Number of Layers  : 2
+Number of Convos  : 4 [16, 32, 64, 128]
+Use Augmentation  : True
+Use Dropout      : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3545
+Training Accuracy : 0.8403
+Validation Loss   : 0.4235
+Validation Accuracy: 0.8191
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 20
+Number of Layers  : 2
+Number of Convos  : 5 [16, 32, 64, 64, 128]
+Use Augmentation  : True
+Use Dropout      : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3398
+Training Accuracy : 0.8476
+Validation Loss   : 0.3946
+Validation Accuracy: 0.8261
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 25
+Number of Layers  : 2
+Number of Convos  : 4 [16, 32, 64, 64]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3411
+Training Accuracy : 0.8468
+Validation Loss   : 0.3145
+Validation Accuracy: 0.8693
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 20
+Number of Layers  : 2
+Number of Convos  : 5 [16, 32, 64, 64, 128]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3352
+Training Accuracy : 0.8487
+Validation Loss   : 0.3135
+Validation Accuracy: 0.8707
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 25
+Number of Layers  : 3
+Number of Convos  : 5 [16, 32, 64, 64, 128]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3018
+Training Accuracy : 0.8671
+Validation Loss   : 0.2724
+Validation Accuracy: 0.8835
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 25
+Number of Layers  : 3
+Number of Convos  : 5 [16, 32, 64, 64, 128]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3079
+Training Accuracy : 0.8661
+Validation Loss   : 0.2916
+Validation Accuracy: 0.8741
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 5e-05
+Epochs            : 25
+Number of Layers  : 3
+Number of Convos  : 5 [16, 32, 64, 64, 128]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.3841
+Training Accuracy : 0.8236
+Validation Loss   : 0.4221
+Validation Accuracy: 0.8181
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 50
+Number of Layers  : 3
+Number of Convos  : 5 [16, 32, 64, 64, 128]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.2274
+Training Accuracy : 0.9031
+Validation Loss   : 0.2118
+Validation Accuracy: 0.9135
+=============================================
+
+
+
+=============================================
+MODEL TRAINING PARAMETERS
+=============================================
+Image Size        : (250, 250)
+Batch Size        : 32
+Learning Rate     : 0.0001
+Epochs            : 100
+Number of Layers  : 3
+Number of Convos  : 5 [16, 32, 64, 64, 128]
+Use Augmentation  : True
+Use Dropout       : False
+
+LAST EPOCH PERFORMANCE
+---------------------------------------------
+Training Loss     : 0.1689
+Training Accuracy : 0.9306
+Validation Loss   : 0.1910
+Validation Accuracy: 0.9227
+=============================================
+
+
+

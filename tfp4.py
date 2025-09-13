@@ -4,15 +4,15 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # to hide tensorflow startup info
 
 import tensorflow as tf
 
-# Variables to test for best accuracy:
-IMAGE_SIZE = (250, 250)  # unoptimized
-BATCH_SIZE = 32  # unoptimized
-LR = 1e-4  # unoptimized
-EPOCHS = 20  # unoptimized
-NUM_LAYERS = 2  # unoptimized
-NUM_CONVOS = 4  # unoptimized
+# Variables optimized for best accuracy:
+IMAGE_SIZE = (250, 250)
+BATCH_SIZE = 32
+LR = 1e-4
+EPOCHS = 100
+NUM_LAYERS = 3
+NUM_CONVOS = 5
 USE_AUG = 1
-USE_DRPT = 0  # unoptimized
+USE_DRPT = 0
 
 
 def print_parameters(
@@ -24,22 +24,23 @@ def print_parameters(
     NUM_CONVOS,
     USE_AUG,
     USE_DRPT,
+    convos,
     history=None,
     log_file="CNN_results.txt",
 ):
     with open(log_file, "a") as f:
-        f.write("\n" + "=" * 40 + "\n")
+        f.write("=" * 45 + "\n")
         f.write("MODEL TRAINING PARAMETERS\n")
-        f.write("=" * 40 + "\n")
+        f.write("=" * 45 + "\n")
 
         f.write(f"Image Size        : {IMAGE_SIZE}\n")
         f.write(f"Batch Size        : {BATCH_SIZE}\n")
         f.write(f"Learning Rate     : {LR}\n")
         f.write(f"Epochs            : {EPOCHS}\n")
         f.write(f"Number of Layers  : {NUM_LAYERS}\n")
-        f.write(f"Number of Convos  : {NUM_CONVOS}\n")
+        f.write(f"Number of Convos  : {NUM_CONVOS} {convos}\n")
         f.write(f"Use Augmentation  : {bool(USE_AUG)}\n")
-        f.write(f"Use Regularization: {bool(USE_DRPT)}\n")
+        f.write(f"Use Dropout       : {bool(USE_DRPT)}\n")
 
         if history is not None:
             last_epoch = -1  # last epoch index
@@ -49,12 +50,12 @@ def print_parameters(
             val_acc = history.history["val_accuracy"][last_epoch]
 
             f.write("\nLAST EPOCH PERFORMANCE\n")
-            f.write("-" * 40 + "\n")
+            f.write("-" * 45 + "\n")
             f.write(f"Training Loss     : {train_loss:.4f}\n")
             f.write(f"Training Accuracy : {train_acc:.4f}\n")
             f.write(f"Validation Loss   : {val_loss:.4f}\n")
             f.write(f"Validation Accuracy: {val_acc:.4f}\n")
-        f.write("=" * 40 + "\n\n\n\n")
+        f.write("=" * 45 + "\n\n\n\n")
 
 
 TRAIN_DIR = "PetImages\\train"
@@ -78,13 +79,14 @@ def create_no_aug_model(USE_DRPT, NUM_CONVOS, NUM_LAYERS):
         if USE_DRPT:
             model.add(tf.keras.layers.Dropout(0.2))
 
-    # First 3 conv blocks
-    for f in [16, 32, 64]:
-        conv_block(f)
+    convos = [16, 32, 64, 64, 128]
+    """
+    if NUM_CONVOS == 5:
+        convos.append(128)
+    """
 
-    # Optional 4th conv block
-    if NUM_CONVOS == 4:
-        conv_block(64)
+    for f in convos:
+        conv_block(f)
 
     # Flatten + dense
     model.add(tf.keras.layers.Flatten())
@@ -101,7 +103,7 @@ def create_no_aug_model(USE_DRPT, NUM_CONVOS, NUM_LAYERS):
 
     model.add(tf.keras.layers.Dense(1, activation="sigmoid"))
 
-    return model
+    return model, convos
 
 
 def create_augmentation():
@@ -118,20 +120,19 @@ def create_augmentation():
     return model
 
 
-no_aug_model, augmentation = (
+(no_aug_model, convos), augmentation = (
     create_no_aug_model(USE_DRPT, NUM_CONVOS, NUM_LAYERS),
     create_augmentation(),
 )
 
-tf.keras.layers.Dropout(0.2) if USE_DRPT else None,
 
-# model = tf.keras.models.Sequential([no_aug_model])
-# model = tf.keras.models.Sequential([augmentation, no_aug_model])
-
+"""
 if USE_AUG:
     model = tf.keras.models.Sequential([augmentation, no_aug_model])
 else:
     model = tf.keras.models.Sequential([no_aug_model])
+"""
+model = tf.keras.models.Sequential([augmentation, no_aug_model])
 
 
 train_dataset = tf.keras.utils.image_dataset_from_directory(
@@ -188,6 +189,7 @@ print_parameters(
     NUM_LAYERS=NUM_LAYERS,
     NUM_CONVOS=NUM_CONVOS,
     USE_AUG=USE_AUG,
+    convos=convos,
     USE_DRPT=USE_DRPT,
     history=history,
 )
