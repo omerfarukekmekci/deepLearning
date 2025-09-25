@@ -9,7 +9,7 @@ import numpy as np
 import math
 import tqdm
 
-device = torch.device("cpu")
+device = torch.device("cuda")
 
 # ==================================
 # Dataset: CIFAR-10
@@ -181,11 +181,133 @@ class UNet(nn.Module):
 # ==================================
 
 
+# Hyperparameters
+T = 100  # number of diffusion timesteps
+lr = 1e-3  # learning rate
+epochs = 5  # for demonstration; will increase later
+batch_size = 16
+
+
+# Prepare diffusion schedules
+betas = make_beta_schedule(T=T).to(device)
+alphas, alpha_cumprod = compute_alphas(betas)
+alpha_cumprod = alpha_cumprod.to(device)
+
+
+# Initialize U-Net and optimizer
+model = UNet(n_channels=3, n_classes=3).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+
+# Training loop
+for epoch in range(epochs):
+    model.train()
+    pbar = tqdm.tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}")
+    for batch_idx, (x0, _) in enumerate(pbar):
+        x0 = x0.to(device)  # clean images
+        batch_size = x0.size(0)
+
+        # 1. Sample random timesteps for each image
+        t = sample_timesteps(batch_size, T).to(device)
+
+        # 2. Forward diffusion: get noisy images and noise
+        x_t, noise = forward_diffusion_sample(x0, t, alpha_cumprod)
+
+        # 3. Predict noise with U-Net
+        pred_noise = model(x_t)
+
+        # 4. Compute loss (MSE between predicted noise and true noise)
+        loss = F.mse_loss(pred_noise, noise)
+
+        # 5. Backpropagation
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # 6. Update progress bar
+        pbar.set_postfix({"loss": loss.item()})
+
+    # Optional: evaluate on a batch from test_loader for monitoring
+    model.eval()
+    with torch.no_grad():
+        x0_test, _ = next(iter(test_loader))
+        x0_test = x0_test.to(device)
+        t_test = sample_timesteps(x0_test.size(0), T).to(device)
+        x_t_test, noise_test = forward_diffusion_sample(x0_test, t_test, alpha_cumprod)
+        pred_noise_test = model(x_t_test)
+        test_loss = F.mse_loss(pred_noise_test, noise_test)
+        print(f"Epoch {epoch+1} test loss: {test_loss.item()}")
+
+
 # ==================================
 # Sampling
 # ==================================
 
 
+@torch.no_grad()  # no gradient needed during sampling
+def sample_images(model, alpha_cumprod, T, shape):
+    model.eval()
+    x = torch.randn(shape).to(device)  # start with pure noise
+
+    for t in reversed(range(T)):
+        t_tensor = torch.full((shape[0],), t, dtype=torch.long).to(device)
+        pred_noise = model(x)  # predict noise at this timestep
+
+        alpha_t = alpha_cumprod[t]
+        alpha_prev = alpha_cumprod[t - 1] if t > 0 else torch.tensor(1.0)
+
+        # Compute mean of x_{t-1}
+        x = (1 / torch.sqrt(alpha_t)) * (
+            x - ((1 - alpha_t) / torch.sqrt(1 - alpha_t)) * pred_noise
+        )
+
+        # Optional: add noise except at last step
+        if t > 0:
+            noise = torch.randn_like(x)
+            beta_t = 1 - alpha_t / alpha_prev
+            x += torch.sqrt(beta_t) * noise
+
+    return x  # x should now resemble clean images
+
+
 # ==================================
 # Visualizations
 # ==================================
+
+
+# Pick a batch of images
+x0, _ = next(iter(train_loader))  # grab the first batch
+x0 = x0[:1].to(device)  # select the first image in batch and move to device
+
+plt.figure(figsize=(12, 3))  # set the figure size
+
+# Visualize noise at selected timesteps
+for i, t in enumerate([0, 10, 30, 50, 70, 99]):  # sample timesteps
+    t_tensor = torch.tensor([t]).to(device)  # timestep tensor for forward diffusion
+    xt, _ = forward_diffusion_sample(x0, t_tensor, alpha_cumprod)  # noisy image
+
+    img = xt[0].cpu().permute(1, 2, 0)  # bring to CPU and reorder axes HWC
+    img = (img + 1) / 2  # unnormalize from [-1,1] -> [0,1] for plotting
+
+    plt.subplot(1, 6, i + 1)  # create subplot
+    plt.imshow(img)  # plot the image
+    plt.axis("off")  # remove axes
+    plt.title(f"t={t}")  # show timestep
+
+plt.show()
+
+
+# Generate images
+gen_imgs = sample_images(
+    model, alpha_cumprod, T, shape=(4, 3, 32, 32)
+)  # generate 4 images
+gen_imgs = (gen_imgs + 1) / 2  # [-1,1] -> [0,1] for plotting
+
+plt.figure(figsize=(8, 4))  # figure size
+for i in range(4):
+    plt.subplot(1, 4, i + 1)
+    img = gen_imgs[i].cpu().permute(1, 2, 0)  # reorder to HWC
+    img = torch.clamp(img, 0, 1)
+    plt.imshow(img)
+    plt.axis("off")
+plt.show()
